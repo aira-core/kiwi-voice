@@ -923,7 +923,11 @@ class KiwiAPI:
         <li><span class="endpoint">GET /api/events</span> - WebSocket events</li>
     </ul>
     <script>
-        fetch('/api/status')
+        const kiwiBasePath = window.location.pathname === '/'
+            ? ''
+            : window.location.pathname.replace(/\\/$/, '');
+
+        fetch(`${kiwiBasePath}/api/status`)
             .then(r => r.json())
             .then(data => {
                 document.getElementById('status').innerHTML =

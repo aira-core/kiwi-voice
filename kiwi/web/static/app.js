@@ -9,8 +9,21 @@
 // Configuration
 // ============================================================
 
-const API_BASE = window.location.origin + '/api';
-const WS_URL = `ws://${window.location.host}/api/events`;
+function getDashboardBasePath() {
+    if (typeof window.KIWI_DASHBOARD_BASE_PATH === 'string') {
+        return window.KIWI_DASHBOARD_BASE_PATH;
+    }
+
+    const path = window.location.pathname || '/';
+    const basePath = (!path || path === '/') ? '' : path.replace(/\/$/, '');
+    window.KIWI_DASHBOARD_BASE_PATH = basePath;
+    return basePath;
+}
+
+const DASHBOARD_BASE_PATH = getDashboardBasePath();
+const API_BASE = `${window.location.origin}${DASHBOARD_BASE_PATH}/api`;
+const WS_SCHEME = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const WS_URL = `${WS_SCHEME}//${window.location.host}${DASHBOARD_BASE_PATH}/api/events`;
 
 // ============================================================
 // State

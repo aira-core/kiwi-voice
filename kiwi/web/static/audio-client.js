@@ -10,9 +10,26 @@
  *   client.disconnect();      // clean shutdown
  */
 
+function normalizeDashboardBasePath(basePath) {
+  if (!basePath || basePath === '/') return '';
+  return String(basePath).replace(/\/$/, '');
+}
+
+function getDashboardBasePath() {
+  if (typeof window.KIWI_DASHBOARD_BASE_PATH === 'string') {
+    return window.KIWI_DASHBOARD_BASE_PATH;
+  }
+
+  const path = location.pathname || '/';
+  const basePath = normalizeDashboardBasePath(path);
+  window.KIWI_DASHBOARD_BASE_PATH = basePath;
+  return basePath;
+}
+
 class KiwiAudioClient {
   constructor(options = {}) {
     this.sampleRate = options.sampleRate || 16000;
+    this.basePath = normalizeDashboardBasePath(options.basePath || getDashboardBasePath());
     this.wsUrl = options.wsUrl || this._defaultWsUrl();
 
     // State
@@ -59,7 +76,7 @@ class KiwiAudioClient {
 
       // 2. Create AudioContext at capture sample rate
       this.audioCtx = new AudioContext({ sampleRate: this.sampleRate });
-      await this.audioCtx.audioWorklet.addModule('/static/audio-worklet.js');
+      await this.audioCtx.audioWorklet.addModule(`${this.basePath || ''}/static/audio-worklet.js`);
 
       // 3. Capture worklet
       const source = this.audioCtx.createMediaStreamSource(this.stream);
@@ -149,7 +166,7 @@ class KiwiAudioClient {
 
   _defaultWsUrl() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${proto}//${location.host}/api/audio`;
+    return `${proto}//${location.host}${this.basePath || ''}/api/audio`;
   }
 
   _setState(s) {
